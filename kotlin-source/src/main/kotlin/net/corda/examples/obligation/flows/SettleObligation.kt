@@ -10,7 +10,7 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.examples.obligation.ObligationContract
-import net.corda.examples.obligation.ObligationContract.Companion.OBLIGATION_CONTRACT_ID
+import net.corda.examples.obligation.ObligationContract.Companion.INSURECAR_CONTRACT_ID
 import net.corda.finance.contracts.asset.Cash
 import net.corda.finance.contracts.getCashBalance
 import java.util.*
@@ -87,7 +87,7 @@ object SettleObligation {
             val amountRemaining = amountLeftToSettle - amount
             if (amountRemaining > Amount.zero(amount.token)) {
                 val outputObligation = inputObligation.pay(amount)
-                builder.addOutputState(outputObligation, OBLIGATION_CONTRACT_ID)
+                builder.addOutputState(outputObligation, INSURECAR_CONTRACT_ID)
             }
 
             // Stage 9. Verify and sign the transaction.
