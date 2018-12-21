@@ -12,7 +12,7 @@ import net.corda.core.utilities.ProgressTracker.Step
 import net.corda.core.utilities.seconds
 import net.corda.examples.obligation.Obligation
 import net.corda.examples.obligation.ObligationContract
-import net.corda.examples.obligation.ObligationContract.Companion.OBLIGATION_CONTRACT_ID
+import net.corda.examples.obligation.ObligationContract.Companion.INSURECAR_CONTRACT_ID
 import java.util.*
 
 object IssueObligation {
@@ -48,7 +48,7 @@ object IssueObligation {
             // Step 2. Building.
             progressTracker.currentStep = BUILDING
             val utx = TransactionBuilder(firstNotary)
-                    .addOutputState(obligation, OBLIGATION_CONTRACT_ID)
+                    .addOutputState(obligation, INSURECAR_CONTRACT_ID)
                     .addCommand(ObligationContract.Commands.Issue(), obligation.participants.map { it.owningKey })
                     .setTimeWindow(serviceHub.clock.instant(), 30.seconds)
 

@@ -5,7 +5,7 @@ import net.corda.core.identity.AbstractParty
 import net.corda.core.utilities.OpaqueBytes
 import net.corda.examples.obligation.Obligation
 import net.corda.examples.obligation.ObligationContract
-import net.corda.examples.obligation.ObligationContract.Companion.OBLIGATION_CONTRACT_ID
+import net.corda.examples.obligation.ObligationContract.Companion.INSURECAR_CONTRACT_ID
 import net.corda.finance.DOLLARS
 import net.corda.finance.POUNDS
 import net.corda.finance.`issued by`
@@ -29,27 +29,27 @@ class ObligationContractSettleTests : ObligationContractUnitTests() {
         val outputCash = inputCash.withNewOwner(newOwner = ALICE).ownableState
         ledger {
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
-                input(OBLIGATION_CONTRACT_ID) { inputCash }
-                output(OBLIGATION_CONTRACT_ID) { outputCash }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { inputCash }
+                output(INSURECAR_CONTRACT_ID) { outputCash }
                 command(BOB_PUBKEY) { Cash.Commands.Move() }
                 this.fails()
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
-                input(OBLIGATION_CONTRACT_ID) { inputCash }
-                output(OBLIGATION_CONTRACT_ID) { outputCash }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { inputCash }
+                output(INSURECAR_CONTRACT_ID) { outputCash }
                 command(BOB_PUBKEY) { Cash.Commands.Move() }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { DummyCommand() } // Wrong type.
                 this.fails()
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
-                input(OBLIGATION_CONTRACT_ID) { inputCash }
-                output(OBLIGATION_CONTRACT_ID) { outputCash }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { inputCash }
+                output(INSURECAR_CONTRACT_ID) { outputCash }
                 command(BOB_PUBKEY) { Cash.Commands.Move() }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() } // Correct Type.
                 this.verifies()
@@ -65,24 +65,24 @@ class ObligationContractSettleTests : ObligationContractUnitTests() {
         ledger {
             transaction {
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation }
                 this `fails with` "There must be one input obligation."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { duplicateObligation }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { duplicateObligation }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
-                input(OBLIGATION_CONTRACT_ID) { fiveDollars }
-                output(OBLIGATION_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { fiveDollars }
+                output(INSURECAR_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { Cash.Commands.Move() }
                 this `fails with` "There must be one input obligation."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
-                input(OBLIGATION_CONTRACT_ID) { tenDollars }
-                output(OBLIGATION_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollars }
+                output(INSURECAR_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { Cash.Commands.Move() }
                 this.verifies()
             }
@@ -95,16 +95,16 @@ class ObligationContractSettleTests : ObligationContractUnitTests() {
         val cashPayment = cash.withNewOwner(newOwner = ALICE)
         ledger {
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this `fails with` "There must be output cash."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { cash }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
-                output(OBLIGATION_CONTRACT_ID) { cashPayment.ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { cash }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                output(INSURECAR_CONTRACT_ID) { cashPayment.ownableState }
                 command(BOB_PUBKEY) { cashPayment.command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this.verifies()
@@ -119,19 +119,19 @@ class ObligationContractSettleTests : ObligationContractUnitTests() {
         val validCashPayment = cash.withNewOwner(newOwner = ALICE)
         ledger {
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { cash }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
-                output(OBLIGATION_CONTRACT_ID) { invalidCashPayment.ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { cash }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                output(INSURECAR_CONTRACT_ID) { invalidCashPayment.ownableState }
                 command(BOB_PUBKEY) { invalidCashPayment.command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this `fails with` "There must be output cash paid to the recipient."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { cash }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
-                output(OBLIGATION_CONTRACT_ID) { validCashPayment.ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { cash }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                output(INSURECAR_CONTRACT_ID) { validCashPayment.ownableState }
                 command(BOB_PUBKEY) { validCashPayment.command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this.verifies()
@@ -146,27 +146,27 @@ class ObligationContractSettleTests : ObligationContractUnitTests() {
         val fiveDollars = createCashState(5.DOLLARS, BOB)
         ledger {
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { elevenDollars }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(11.DOLLARS) }
-                output(OBLIGATION_CONTRACT_ID) { elevenDollars.withNewOwner(newOwner = ALICE).ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { elevenDollars }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(11.DOLLARS) }
+                output(INSURECAR_CONTRACT_ID) { elevenDollars.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { elevenDollars.withNewOwner(newOwner = ALICE).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this `fails with` "The amount settled cannot be more than the amount outstanding."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { fiveDollars }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
-                output(OBLIGATION_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { fiveDollars }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                output(INSURECAR_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { fiveDollars.withNewOwner(newOwner = ALICE).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this.verifies()
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { tenDollars }
-                output(OBLIGATION_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { tenDollars }
+                output(INSURECAR_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { tenDollars.withNewOwner(newOwner = ALICE).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this.verifies()
@@ -180,17 +180,17 @@ class ObligationContractSettleTests : ObligationContractUnitTests() {
         val tenPounds = createCashState(10.POUNDS, BOB)
         ledger {
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { tenPounds }
-                output(OBLIGATION_CONTRACT_ID) { tenPounds.withNewOwner(newOwner = ALICE).ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { tenPounds }
+                output(INSURECAR_CONTRACT_ID) { tenPounds.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { tenPounds.withNewOwner(newOwner = ALICE).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this `fails with` "Token mismatch: GBP vs USD"
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { tenDollars }
-                output(OBLIGATION_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { tenDollars }
+                output(INSURECAR_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { tenDollars.withNewOwner(newOwner = ALICE).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this.verifies()
@@ -204,35 +204,35 @@ class ObligationContractSettleTests : ObligationContractUnitTests() {
         val fiveDollars = createCashState(5.DOLLARS, BOB)
         ledger {
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { fiveDollars }
-                output(OBLIGATION_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { fiveDollars }
+                output(INSURECAR_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { fiveDollars.withNewOwner(newOwner = BOB).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this `fails with` "There must be one output obligation."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { fiveDollars }
-                output(OBLIGATION_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { fiveDollars }
+                output(INSURECAR_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
                 command(BOB_PUBKEY) { fiveDollars.withNewOwner(newOwner = BOB).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 verifies()
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollars }
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(10.DOLLARS) }
-                output(OBLIGATION_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollars }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(10.DOLLARS) }
+                output(INSURECAR_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { tenDollars.withNewOwner(newOwner = BOB).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this `fails with` "There must be no output obligation as it has been fully settled."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollars }
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                output(OBLIGATION_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
+                input(INSURECAR_CONTRACT_ID) { tenDollars }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { tenDollars.withNewOwner(newOwner = ALICE).ownableState }
                 command(BOB_PUBKEY) { tenDollars.withNewOwner(newOwner = BOB).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 verifies()
@@ -245,37 +245,37 @@ class ObligationContractSettleTests : ObligationContractUnitTests() {
         val fiveDollars = createCashState(5.DOLLARS, BOB)
         ledger {
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { fiveDollars }
-                output(OBLIGATION_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.copy(borrower = ALICE, paid = 5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { fiveDollars }
+                output(INSURECAR_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.copy(borrower = ALICE, paid = 5.DOLLARS) }
                 command(BOB_PUBKEY) { fiveDollars.withNewOwner(newOwner = BOB).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this `fails with` "The borrower may not change when settling."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { fiveDollars }
-                output(OBLIGATION_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.copy(amount = 0.DOLLARS, paid = 5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { fiveDollars }
+                output(INSURECAR_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.copy(amount = 0.DOLLARS, paid = 5.DOLLARS) }
                 command(BOB_PUBKEY) { fiveDollars.withNewOwner(newOwner = BOB).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this `fails with` "The amount may not change when settling."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { fiveDollars }
-                output(OBLIGATION_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.copy(lender = CHARLIE, paid = 5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { fiveDollars }
+                output(INSURECAR_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.copy(lender = CHARLIE, paid = 5.DOLLARS) }
                 command(BOB_PUBKEY) { fiveDollars.withNewOwner(newOwner = BOB).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 this `fails with` "The lender may not change when settling."
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                input(OBLIGATION_CONTRACT_ID) { fiveDollars }
-                output(OBLIGATION_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                input(INSURECAR_CONTRACT_ID) { fiveDollars }
+                output(INSURECAR_CONTRACT_ID) { fiveDollars.withNewOwner(newOwner = ALICE).ownableState }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
                 command(BOB_PUBKEY) { fiveDollars.withNewOwner(newOwner = BOB).command }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 verifies()
@@ -289,29 +289,29 @@ class ObligationContractSettleTests : ObligationContractUnitTests() {
         val cashPayment = cash.withNewOwner(newOwner = ALICE)
         ledger {
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { cash }
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                output(OBLIGATION_CONTRACT_ID) { cashPayment.ownableState }
+                input(INSURECAR_CONTRACT_ID) { cash }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { cashPayment.ownableState }
                 command(BOB_PUBKEY) { cashPayment.command }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
                 command(ALICE_PUBKEY, CHARLIE_PUBKEY) { ObligationContract.Commands.Settle() }
                 failsWith("Both lender and borrower together only must sign obligation settle transaction.")
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { cash }
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                output(OBLIGATION_CONTRACT_ID) { cashPayment.ownableState }
+                input(INSURECAR_CONTRACT_ID) { cash }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { cashPayment.ownableState }
                 command(BOB_PUBKEY) { cashPayment.command }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
                 command(BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 failsWith("Both lender and borrower together only must sign obligation settle transaction.")
             }
             transaction {
-                input(OBLIGATION_CONTRACT_ID) { cash }
-                input(OBLIGATION_CONTRACT_ID) { tenDollarObligation }
-                output(OBLIGATION_CONTRACT_ID) { cashPayment.ownableState }
+                input(INSURECAR_CONTRACT_ID) { cash }
+                input(INSURECAR_CONTRACT_ID) { tenDollarObligation }
+                output(INSURECAR_CONTRACT_ID) { cashPayment.ownableState }
                 command(BOB_PUBKEY) { cashPayment.command }
-                output(OBLIGATION_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
+                output(INSURECAR_CONTRACT_ID) { tenDollarObligation.pay(5.DOLLARS) }
                 command(ALICE_PUBKEY, BOB_PUBKEY) { ObligationContract.Commands.Settle() }
                 verifies()
             }

@@ -2,12 +2,11 @@ package net.corda.examples.obligation
 
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.UniqueIdentifier
+import net.corda.core.identity.CordaX500Name
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.utilities.OpaqueBytes
 import net.corda.core.utilities.getOrThrow
-import net.corda.examples.obligation.flows.IssueObligation
-import net.corda.examples.obligation.flows.SettleObligation
-import net.corda.examples.obligation.flows.TransferObligation
+import net.corda.examples.obligation.flows.*
 import net.corda.finance.contracts.asset.Cash
 import net.corda.finance.contracts.getCashBalances
 import net.corda.finance.flows.CashIssueFlow
@@ -88,9 +87,9 @@ class ObligationApi(val rpcOps: CordaRPCOps) {
 
     @GET
     @Path("issue-obligation")
-    fun issueObligation(@QueryParam(value = "amount") amount: Int,
-                        @QueryParam(value = "currency") currency: String,
-                        @QueryParam(value = "party") party: String): Response {
+    fun issuePolicy(@QueryParam(value = "amount") amount: Int,
+                    @QueryParam(value = "currency") currency: String,
+                    @QueryParam(value = "party") party: String): Response {
         // 1. Get party objects for the counterparty.
         val lenderIdentity = rpcOps.partiesFromName(party, exactMatch = false).singleOrNull()
                 ?: throw IllegalStateException("Couldn't lookup node identity for $party.")
@@ -142,28 +141,65 @@ class ObligationApi(val rpcOps: CordaRPCOps) {
         return Response.status(status).entity(message).build()
     }
 
+    //Issue a policy to a user
     @GET
-    @Path("settle-obligation")
-    fun settleObligation(@QueryParam(value = "id") id: String,
-                         @QueryParam(value = "amount") amount: Int,
-                         @QueryParam(value = "currency") currency: String): Response {
-        val linearId = UniqueIdentifier.fromString(id)
-        val settleAmount = Amount(amount.toLong() * 100, Currency.getInstance(currency))
+    @Path("issue-policy")
+    fun issuePolicy(@QueryParam(value = "user") user: String,
+                    @QueryParam(value = "premium") premium: Int,
+                    @QueryParam(value = "flight") flight: String,
+                    @QueryParam(value = "fStatus") fStatus: String): Response {
 
+        // 1. Create a premium object.
+        val issuePremium = Amount(premium.toLong() * 100, Currency.getInstance("CAD"))
+        val client = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse("O=Client,L=Winnipeg,C=CA"))
+        val underwriter = rpcOps.wellKnownPartyFromX500Name(CordaX500Name.parse("O=Wawanesa,L=Winnipeg,C=CA"))
+
+        // 2. Start the IssuePolicy flow. We block and wait for the flow to return.
         val (status, message) = try {
             val flowHandle = rpcOps.startFlowDynamic(
-                    SettleObligation.Initiator::class.java,
-                    linearId,
-                    settleAmount,
-                    true
+                    IssuePolicy.Initiator::class.java,
+                    user,
+                    issuePremium,
+                    client,
+                    underwriter
             )
 
-            flowHandle.use { flowHandle.returnValue.getOrThrow() }
-            CREATED to "$amount $currency paid off on obligation id $id."
+            val result = flowHandle.use { it.returnValue.getOrThrow() }
+            CREATED to "Transaction completed."
         } catch (e: Exception) {
             BAD_REQUEST to e.message
         }
 
+        // 3. Return the result.
+        return Response.status(status).entity(message).build()
+    }
+
+
+    //In the event of a crash, insurer pays the claim to the driver
+    @GET
+    @Path("payout-policy")
+    fun settlePolicy(@QueryParam(value = "id") id: String,
+                     @QueryParam(value = "claim") claim: Int,
+                     @QueryParam(value = "status") fStatus: String): Response {
+        // 1. Get party objects for the counterparty.
+        val linearId = UniqueIdentifier.fromString(id)
+
+        // 2. Start the SettlePolicy flow. We block and wait for the flow to return.
+        val (status, message) = try {
+            val flowHandle = rpcOps.startFlowDynamic(
+                    CrashPayout.Initiator::class.java,
+                    linearId,
+                    claim,
+                    fStatus
+            )
+
+            flowHandle.use { flowHandle.returnValue.getOrThrow() }
+            CREATED to "Transaction completed."
+        } catch (e: Exception) {
+            BAD_REQUEST to e.message
+        }
+
+        // 3. Return the result.
         return Response.status(status).entity(message).build()
     }
 }
